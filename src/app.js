@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const sql = require('mssql/msnodesqlv8')
 const cors = require('cors')
 const morgan = require('morgan')
+const localConfiguration = require('./config')
 
 const app = express()
 app.use(morgan('combined'))
@@ -24,7 +25,7 @@ var cnt = app.listen(4000, function () {
 
 var sqlConfig = {
   driver: 'msnodesqlv8',
-  connectionString: 'Driver={SQL Server Native Client 11.0};Server={SERDBDESA04\\SQL2012};Database={CNT};Trusted_Connection={yes};'
+  connectionString: localConfiguration.ConnectionString()
 }
 
 var executeQuery = function (res, query) {
@@ -49,21 +50,14 @@ var executeQuery = function (res, query) {
 
 // GET all MERCHANTS
 app.get('/api/merchants', function (req, res) {
-  var query = `SELECT TOP 100 
-                    [ID], [NAME], [TOWN_DISTRICT_ID]
-                FROM 
-                    [CNT].[ca].[MERCHANTS]`
+  var query = localConfiguration.SelectStatament()
   sql.close() // <------ Cerrar la conexion antes de volver a consultar
   executeQuery(res, query)
 })
 
 // GET MERCHANTS by ID
 app.get('/api/merchants/:id', function (req, res) {
-  var query = `SELECT TOP 100 
-                    [ID], [NAME], [TOWN_DISTRICT_ID]
-                FROM 
-                    [CNT].[ca].[MERCHANTS]
-                WHERE [ID] = ` + req.params.id
+  var query = localConfiguration.SelectWhereStatament(req.params.id)
   sql.close() // <------ Cerrar la conexion antes de volver a consultar
   executeQuery(res, query)
 })
