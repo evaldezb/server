@@ -8,14 +8,19 @@ const localConfiguration = require('./config')
 const app = express()
 app.use(morgan('combined'))
 app.use(bodyParser.json())
-app.use(cors())
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true)
 
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Methods', 'HEAD, OPTIONS, POST, PUT')
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, contentType, Content-Type, Accept, Authorization')
-  next()
-})
+    if (localConfiguration.AllowedOrigins.indexOf(origin) === -1) {
+      var msg = 'The CORS policy for this site does not allow access from the specified Origin.'
+
+      return callback(new Error(msg), false)
+    }
+
+    return callback(null, true)
+  }
+}))
 
 var cnt = app.listen(4000, function () {
   var port = cnt.address().port
